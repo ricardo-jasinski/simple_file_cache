@@ -12,4 +12,5 @@ Gem::Specification.new do |gem|
   gem.files = ['lib/simple_cache.rb']
   gem.authors = ['Ricardo Jasinski']
   gem.email = 'jasinski@solvis.com.br'
+  gem.add_development_dependency 'rspec', '~> 3.7'
 end
