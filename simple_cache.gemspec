@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
     'can be retrieved later from the disk rather than recomputed from scratch. ' +
     'It defines a single method #load_or_recompute that receives a file path ' +
     'and a block. If the file exists and is recent (last changed today), it ' +
-    'returns the file contents read with Marshal#load. Ohterwise, it executes' +
+    'returns the file contents read with Marshal#load. Otherwise, it executes' +
     'the block, saves its return value with Marshal#dump and returns the new data.'
   gem.files = ['lib/simple_cache.rb']
   gem.authors = ['Ricardo Jasinski']

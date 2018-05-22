@@ -1,4 +1,7 @@
-class SimpleCache
+require 'date'
+
+# class SimpleCache
+module SimpleCache
 
   # Checks whether cache file exists and is recent (last modified today). If so,
   # reads data from file using Marshal#load. Otherwise, executes the given block
