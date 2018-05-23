@@ -1,6 +1,5 @@
 require 'date'
 
-# class SimpleCache
 module SimpleCache
 
   # Checks whether cache file exists and is recent (last modified today). If so,
@@ -11,7 +10,7 @@ module SimpleCache
     if cache_file_name.include?('/')
       cache_file_pathname = cache_file_name
     else
-      cache_file_pathname = 'tmp/cache/' + cache_file_name
+      cache_file_pathname = "#{configuration.cache_dir_path}/#{cache_file_name}"
     end
 
     cache_file_exists = File.exists?(cache_file_pathname)
@@ -31,10 +30,37 @@ module SimpleCache
     end
   end
 
+  class << self
+    attr_accessor :configuration
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
+
+  def self.reset
+    @configuration = Configuration.new
+  end
+
+  def self.configure
+    yield(configuration)
+  end
+
+  class Configuration
+    attr_accessor :cache_dir_path, :cache_expiration_policy, :cache_max_age_in_seconds
+
+    def initialize
+      @cache_dir_path = '.'
+      @cache_expiration_policy = :same_day
+      @cache_max_age_in_seconds = nil
+    end
+  end
+
 private
 
+  # Allow the client code to silence the gem by setting an environment variable
   def self.log(message)
-    return if ENV['TEST']
+    return if ENV['TEST'] != ''
     puts message
   end
 
