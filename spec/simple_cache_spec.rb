@@ -17,16 +17,13 @@ describe SimpleCache do
 
   describe '#load_or_recompute' do
     it 'unmarshalls data from the cache file when it exists' do
-      # Manually create a cache file containing an array serialized by Marshal.dump
-      # cache_file = Tempfile.new('cache.dat')
-      # File.write(cache_file.path, Marshal.dump([1, :a, 'hello']))
       cache_file = new_tempfile_with_contents([1, :a, 'hello'])
 
       data = SimpleCache.load_or_recompute(cache_file.path) do
-        :this_line_should_never_be_evaluated
+        :this_should_never_be_evaluated
       end
 
-      expect(data).not_to eq(:this_line_should_never_be_evaluated)
+      expect(data).not_to eq(:this_should_never_be_evaluated)
       expect(data).to eq([1, :a, 'hello'])
     end
 
@@ -41,14 +38,14 @@ describe SimpleCache do
 
     it 'executes the given block and recreates the cache file if it is outdated' do
       cache_file = new_tempfile_with_contents(13)
-      FileUtils.touch cache_file.path, :mtime => Time.now - 1*60*60*24*2
+      FileUtils.touch cache_file.path, mtime: Date.today.prev_day.to_time
       data = SimpleCache.load_or_recompute(cache_file.path) {42}
       expect(data).to eq(42)
     end
 
     it 'executes the given block and recreates the cache file if it is recent' do
       cache_file = new_tempfile_with_contents(13)
-      FileUtils.touch cache_file.path, :mtime => Time.now
+      FileUtils.touch cache_file.path, mtime: Time.now
       data = SimpleCache.load_or_recompute(cache_file.path) {42}
       expect(data).to eq(13)
     end

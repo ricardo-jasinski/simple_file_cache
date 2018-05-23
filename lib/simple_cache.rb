@@ -2,10 +2,10 @@ require 'date'
 
 module SimpleCache
 
-  # Checks whether cache file exists and is recent (last modified today). If so,
-  # reads data from file using Marshal#load. Otherwise, executes the given block
-  # to obtain the new data, saves to cache file using Marshal#dump and returns
-  # the updated data.
+  # Check whether a cache file exists and is recent (last modified today). If so,
+  # read the file using Marshal#load and return it. Otherwise, execute the given
+  # block to obtain the new data, save to the cache file using Marshal#dump and
+  # return the updated data.
   def self.load_or_recompute(cache_file_name, &block)
     if cache_file_name.include?('/')
       cache_file_pathname = cache_file_name
@@ -51,7 +51,7 @@ module SimpleCache
 
     def initialize
       @cache_dir_path = '.'
-      @cache_expiration_policy = :same_day
+      @cache_expiration_policy = :not_from_today # :max_age
       @cache_max_age_in_seconds = nil
     end
   end
