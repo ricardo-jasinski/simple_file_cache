@@ -5,9 +5,9 @@ later from the disk rather than recomputed from scratch.
 
 ## Usage
 SimpleCache defines a single method #load_or_recompute that receives a file path and a 
-block. If the file exists and is recent (last changed today), it returns the 
-file contents (read with Marshal#load). Otherwise, it executes the block, saves 
-its return value (with Marshal#dump) and returns the new data.
+block. If the file exists and is recent (e.g., last changed today), #load_or_recompute returns the 
+existing file contents (read with Marshal#load). Otherwise, #load_or_recompute executes the block, 
+saves its return value (with Marshal#dump) and returns the new data.
 
 ```ruby
 object = SimpleCache.load_or_recompute('example.dat') do
@@ -17,3 +17,5 @@ end
 
 puts object # => 42
 ```
+
+### Configuration

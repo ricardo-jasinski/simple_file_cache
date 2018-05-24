@@ -13,8 +13,7 @@ module SimpleCache
       cache_file_pathname = "#{configuration.cache_dir_path}/#{cache_file_name}"
     end
 
-    cache_file_exists = File.exists?(cache_file_pathname)
-    cache_file_is_recent = cache_file_exists && (File.mtime(cache_file_pathname) > Date.today.to_time)
+    cache_file_is_recent = file_is_recent?(cache_file_pathname)
     rails_production_env = defined?(Rails) && Rails.env.production?
     use_cached_copy = cache_file_is_recent && !rails_production_env
 
@@ -64,4 +63,19 @@ private
     puts message
   end
 
+  def self.file_is_recent?(file_pathname)
+    return false unless File.exists?(file_pathname)
+
+    file_last_changed_at = File.mtime(file_pathname)
+
+    case configuration.cache_expiration_policy
+    when :not_from_today
+      return (file_last_changed_at >= Date.today.to_time)
+    when :max_age
+      file_age = Time.now - file_last_changed_at
+      return (file_age <= configuration.cache_max_age_in_seconds)
+    else
+      return false
+    end
+  end
 end

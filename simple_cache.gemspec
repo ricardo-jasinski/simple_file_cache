@@ -1,6 +1,6 @@
 Gem::Specification.new do |gemspec|
   gemspec.name = 'simple_cache'
-  gemspec.version = '0.0.0'
+  gemspec.version = SimpleCache::VERSION
   gemspec.summary = 'SimpleCache writes a ruby object to a binary file so that it ' +
     'can be retrieved later from the disk rather than recomputed from scratch.'
   gemspec.description = 'SimpleCache writes a ruby object to a binary file so that it ' +

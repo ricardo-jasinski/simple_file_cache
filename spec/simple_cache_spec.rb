@@ -3,18 +3,6 @@ require 'tempfile'
 
 describe SimpleCache do
 
-  describe 'configuration' do
-    describe '#cache_dir_path=' do
-      it 'sets the cache files directory' do
-        Dir.mktmpdir do |test_cache_dir|
-          SimpleCache.configure {|config| config.cache_dir_path = test_cache_dir }
-          SimpleCache.load_or_recompute('test_cache.dat') { 42 }
-          expect(File).to exist("#{test_cache_dir}/test_cache.dat")
-        end
-      end
-    end
-  end
-
   describe '#load_or_recompute' do
     it 'unmarshalls data from the cache file when it exists' do
       cache_file = new_tempfile_with_contents([1, :a, 'hello'])
@@ -37,17 +25,78 @@ describe SimpleCache do
     end
 
     it 'executes the given block and recreates the cache file if it is outdated' do
-      cache_file = new_tempfile_with_contents(13)
+      cache_file = new_tempfile_with_contents('existing content')
       FileUtils.touch cache_file.path, mtime: Date.today.prev_day.to_time
-      data = SimpleCache.load_or_recompute(cache_file.path) {42}
-      expect(data).to eq(42)
+      data = SimpleCache.load_or_recompute(cache_file.path) {'new content'}
+      expect(data).to eq('new content')
     end
 
     it 'executes the given block and recreates the cache file if it is recent' do
-      cache_file = new_tempfile_with_contents(13)
+      cache_file = new_tempfile_with_contents('existing content')
       FileUtils.touch cache_file.path, mtime: Time.now
-      data = SimpleCache.load_or_recompute(cache_file.path) {42}
-      expect(data).to eq(13)
+      data = SimpleCache.load_or_recompute(cache_file.path) {'new content'}
+      expect(data).to eq('existing content')
+    end
+
+    describe 'configuration' do
+      describe '#cache_dir_path=' do
+        it 'sets the cache files directory' do
+          Dir.mktmpdir do |test_cache_dir|
+            SimpleCache.configure {|config| config.cache_dir_path = test_cache_dir }
+            SimpleCache.load_or_recompute('test_cache.dat') {'new content'}
+            expect(File).to exist("#{test_cache_dir}/test_cache.dat")
+          end
+        end
+      end
+
+      describe '#cache_expiration_policy=' do
+        describe ':not_from_today' do
+          before do
+            SimpleCache.configure do |config|
+              config.cache_expiration_policy = :not_from_today
+            end
+            @cache_file = new_tempfile_with_contents('existing content')
+          end
+
+          it 'uses the existing file if it is from today' do
+            todays_first_second = Date.today.to_time
+            FileUtils.touch(@cache_file.path, mtime: todays_first_second)
+            data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
+            expect(data).to eq('existing content')
+          end
+
+          it 'recomputes the file if it is not from today' do
+            yesterdays_last_second = Date.today.to_time - 1
+            FileUtils.touch(@cache_file.path, mtime: yesterdays_last_second)
+            data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
+            expect(data).to eq('new content')
+          end
+        end
+
+        describe ':max_age' do
+          before do
+            allow(Time).to receive(:now).and_return(Time.new('2018-01-01 10:00:00'))
+            SimpleCache.configure do |config|
+              config.cache_expiration_policy = :max_age
+              config.cache_max_age_in_seconds = 60
+            end
+            @cache_file = new_tempfile_with_contents('existing content')
+            @one_minute_ago = Time.now - 60
+          end
+
+          it 'uses the existing file if it is from the last 60 seconds' do
+            FileUtils.touch(@cache_file.path, mtime: @one_minute_ago)
+            data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
+            expect(data).to eq('existing content')
+          end
+
+          it 'recomputes the file if it is older than 60 seconds' do
+            FileUtils.touch(@cache_file.path, mtime: @one_minute_ago - 1)
+            data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
+            expect(data).to eq('new content')
+          end
+        end
+      end
     end
   end
 
