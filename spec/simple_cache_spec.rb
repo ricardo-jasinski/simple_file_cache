@@ -58,14 +58,14 @@ describe SimpleCache do
             @cache_file = new_tempfile_with_contents('existing content')
           end
 
-          it 'uses the existing file if it is from today' do
+          it 'uses the existing file if it was last changed today' do
             todays_first_second = Date.today.to_time
             FileUtils.touch(@cache_file.path, mtime: todays_first_second)
             data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
             expect(data).to eq('existing content')
           end
 
-          it 'recomputes the file if it is not from today' do
+          it 'recomputes the file if it was last changed yesterday' do
             yesterdays_last_second = Date.today.to_time - 1
             FileUtils.touch(@cache_file.path, mtime: yesterdays_last_second)
             data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
@@ -84,7 +84,7 @@ describe SimpleCache do
             @one_minute_ago = Time.now - 60
           end
 
-          it 'uses the existing file if it is from the last 60 seconds' do
+          it 'uses the existing file if it was changed in the last 60 seconds' do
             FileUtils.touch(@cache_file.path, mtime: @one_minute_ago)
             data = SimpleCache.load_or_recompute(@cache_file.path) {'new content'}
             expect(data).to eq('existing content')
