@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    simple_cache (0.0.0)
+    simple_file_cache (0.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -28,7 +28,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   rspec (~> 3.0)
-  simple_cache!
+  simple_file_cache!
 
 BUNDLED WITH
-   1.11.2
+   1.16.2

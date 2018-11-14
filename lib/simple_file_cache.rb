@@ -1,6 +1,6 @@
 require 'date'
 
-module SimpleCache
+module SimpleFileCache
 
   # Check whether a cache file exists and is recent (last modified today). If so,
   # read the file using Marshal#load and return it. Otherwise, execute the given
@@ -50,7 +50,7 @@ module SimpleCache
 
     def initialize
       @cache_dir_path = '.'
-      @cache_expiration_policy = :not_from_today # :max_age
+      @cache_expiration_policy = :yesterday_or_earlier # :max_age
       @cache_max_age_in_seconds = nil
     end
   end
@@ -69,7 +69,7 @@ private
     file_last_changed_at = File.mtime(file_pathname)
 
     case configuration.cache_expiration_policy
-    when :not_from_today
+    when :yesterday_or_earlier
       return (file_last_changed_at >= Date.today.to_time)
     when :max_age
       file_age = Time.now - file_last_changed_at
